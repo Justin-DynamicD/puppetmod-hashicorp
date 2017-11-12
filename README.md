@@ -1,0 +1,1 @@
+# puppetmod-hashicorp
