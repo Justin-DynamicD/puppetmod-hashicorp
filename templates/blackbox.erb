@@ -1,0 +1,21 @@
+#input {
+#  syslog {
+#    # facility_labels  =>
+#    # host             =>
+#    # locale           =>
+#    port             => 514
+#    # proxy_protocol   =>
+#    # severity_labels  =>
+#    # timezone         =>
+#    # use_labels       =>
+#  }
+#}
+
+#output {
+#	elasticsearch {
+#      hosts => '<%= @elastic_server %>:<%= @elastic_port %>'
+#      user => <%= @user %>
+#      password => <%= @password %>
+#      index => "concourse-%{+YYYY.MM.dd}"
+#	}
+#}

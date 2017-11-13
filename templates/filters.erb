@@ -1,0 +1,377 @@
+filter {
+  # Save original type before cloning records
+  mutate {
+    add_field => { "original_type" => "%{type}" }
+  }
+  # Clone the message. After cloning, skip filter processes on any messages of type "clone",
+  # and use lumberjack to forward cloned messages to the right logstash
+  clone {
+    clones => ["clone"]
+  }
+}
+
+filter {
+if [type] != "clone" {
+  geoip {
+    source => [source_host]
+  }
+
+  if [message] =~ /^\s+\-\-/ {
+    # Drop "help" messages
+    drop { }
+  }
+
+  if [message] =~ /^\s+\-[a-z],/ {
+    drop { }
+  }
+
+  if [message] =~ /^Flags/ {
+    drop { }
+  }
+
+  if [message] =~ /^Usage/ {
+    drop { }
+  }
+
+  if [message] =~ /^\s+service/ {
+    drop { }
+  }
+}
+}
+
+# Set/fix container name
+filter {
+if [type] != "clone" {
+  # Set the "type" according to the service (for convenience)
+  if [container_name] =~ /^[\w-]+_[\w-]+_[\d]$/ {
+    mutate {
+      add_tag => ["fix_container_name"]
+    }
+
+    dissect {
+      # ..._bureau-service_1
+      mapping => {
+        "container_name" => "%{}_%{lc_component}_%{lc_component_id}"
+      }
+    }
+    mutate {
+      replace => { "type" => "%{lc_component}" }
+    }
+  }
+  else if [container_name] =~ /^[\w-]+_[\w-]\./ {
+    # ..._bureau-service.1.*
+    dissect {
+      mapping => {
+        "container_name" => "%{}_%{lc_component}.%{lc_component_id}"
+      }
+    }
+    mutate {
+      replace => { "type" => "%{lc_component}" }
+    }
+  }
+}
+}
+
+
+filter {
+if [type] != "clone" {
+  # Grab MySQL values
+  if [type] =~ /^mysql/ {
+    if [message] =~ /^Version/ {
+      grok {
+        # Version: '8.0.1-dmr'  socket: '/var/run/mysqld/mysqld.sock'  port: 6604  MySQL Community Server (GPL)
+        match => {
+          "message" => "Version:\s+'(?<myql_ver>[\w0-9.-]+)'\s+socket:\s+'(?<mysql_socket>[\w/.]+)'\s+port:\s+(?<mysql_port>[\d]+)\s+(?<mysql_version>[\w \(\)]+)"
+        }
+        add_tag => [ "mysql_1" ]
+        tag_on_failure => ["grok_failure_on_mysql_1"]
+      }
+    }
+    else if [message] =~ /^\d{4}-/ {
+      # 2017-09-13T22:57:46.158948Z 0 [Note] mysqld: ready for connections.
+      grok {
+        match => {
+          "message" => "%{TIMESTAMP_ISO8601:timestamp}\s\d\s\[%{WORD:new_level}\]\s+%{GREEDYDATA:new_msg}"
+        }
+        add_tag => [ "mysql_2" ]
+        tag_on_failure => ["grok_failure_on_mysql_2"]
+      }
+      if "grok_failure_on_mysql_2" not in [tags] {
+        mutate {
+          rename => { "new_msg" => "[msg][message]" }
+          rename => { "new_level" => "[msg][level]" }
+          add_tag => [ "mutate2" ]
+        }
+      }
+    }
+  }
+}
+}
+
+
+
+# Concourse log records
+filter {
+if [type] != "clone" {
+  if [container_name] == "concourse-log" {
+    mutate { add_tag => ["concourse_log"] }
+
+    if ("" not in [message]) {
+    #if ![message] {
+      mutate { add_tag => ["concourse_empty_msg"] }
+    }
+    else {
+      dissect {
+        mapping => {
+          "message" => "%{field_1}|%{field_2}|%{field_4}|%{field_5}|%{field_3}"
+        }
+        convert_datatype => {
+          field_1 => "int"
+          field_4 => "int"
+          field_5 => "float"
+        }
+        tag_on_failure => ["dissect_failure_on_concourse_log"]
+      }
+
+      if ("dissect_failure_on_concourse_log" not in [tags]) {
+        mutate {
+          strip => ["field_2", "field_3"]
+        }
+        json {
+          source => "field_3"
+          target => "msg"
+          add_tag => ["concourse_json"]
+        }
+        mutate {
+          rename => {
+            "field_1" => "[msg][build_id]"
+            "field_2" => "[msg][msg_type]"
+            "new_msg" => "[msg][message]"
+            "field_4" => "[msg][seq_id]"
+            "field_5" => "[msg][version]"
+          }
+        }
+        mutate {
+          remove_field => ["message", "field_3"]
+        }
+
+        # Get the elapsed time for a build process by saving the time when the build starts
+        # and subtracting that from the time when the build ends
+
+        if [msg][status] == "started" {
+          aggregate {
+            task_id => "%{[msg][build_id]}"
+            code => "map['begin'] = event.get('[msg][time]')"
+            map_action => "create"
+          }
+        }
+        else if (([msg][status] == "succeeded") or
+                 ([msg][status] == "aborted") or
+                 ([msg][status] == "failed")) {
+          aggregate {
+            task_id => "%{[msg][build_id]}"
+            #code => "map['duration'] = event.get('[msg][time]') - map['begin']"
+            code => "event.set('[msg][duration]', (map['now'] = event.get('[msg][time]')) - map['begin'])"
+            map_action => "create_or_update"
+            end_of_task => true
+            timeout => 300
+          }
+        }
+      } # No dissect failure
+    } # [message] not empty
+  } # concourse-log
+}
+}
+
+
+filter {
+if [type] != "clone" {
+  # Skip Concourse records (already processed)
+  if [container_name] != "concourse-log" {
+
+  # Patterns identified in messages:
+  # <ISO Datetime> <Service> <Timestamp> <JSON>
+  # <ISO Datetime> <Service> <Timestamp> <Text>
+  # <ISO Datetime> <Service> <JSON>
+  # [<ISO Datetime>][<log level>][<module>]<Text>
+  # <Timestamp> <JSON>
+  # <Timestamp> <Text>
+  # <JSON>
+  # <Text>
+  if [message] =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2})\s*?[\w-]+\s*?\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} \{/ {
+    grok {
+      match => {
+        "message" =>
+          "(?<iso_time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2}))\s*?(?<service>[\w-]+)\s*?(?<timestamp>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (?<json_message>{.*})$"
+      }
+      add_tag => ["json_message_1"]
+      tag_on_failure => ["grok_failure_on_json_1"]
+    }
+    if "grok_failure_on_json_1" not in [tags] {
+      json {
+        source => "json_message"
+        target => "msg"
+        add_tag => ["json_1"]
+      }
+      mutate {
+        remove_field => ["message", "json_message"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2})\s*?[\w-]+\s*?\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} \w+/ {
+    grok {
+      match => {
+        "message" =>
+          "(?<iso_time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2}))\s*?(?<service>[\w-]+)\s*?(?<timestamp>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (?<text_message>.+)$"
+      }
+      add_tag => ["text_message_1"]
+      tag_on_failure => ["grok_failure_on_text_1"]
+    }
+    if "grok_failure_on_text_1" not in [tags] {
+      mutate {
+        rename => {"message" => "msg"}
+        add_tag => ["text_1"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2})\s*?[\w-]+\s*? \{/ {
+    grok {
+      match => {
+        "message" =>
+          "(?<iso_time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[,.]\d{3}(Z|[+-]\d{2}[:]?\d{2}))\s*?(?<service>[\w-]+)\s*? (?<json_message>{.*})$"
+      }
+      add_tag => ["json_message_2"]
+      tag_on_failure => ["grok_failure_on_json_2"]
+    }
+    if "grok_failure_on_json_2" not in [tags] {
+      json {
+        source => "json_message"
+        target => "msg"
+        add_tag => ["json_2"]
+      }
+      mutate {
+        remove_field => ["message", "json_message"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ {
+    grok {
+      match => {
+        "message" =>
+          "^\[(?<iso_time>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.,]{1}\d{3})\]\[(?<log_level>[A-Z]+?)[\s]*\]\[(?<module>[a-z.-]+?)\]\s*(?<text_message>.+)$"
+      }
+      add_tag => ["brackets_1"]
+      tag_on_failure => ["grok_failure_on_brackets_1"]
+    }
+    if ("grok_failure_on_brackets_1" not in [tags]) {
+      mutate {
+        rename => {"iso_time" => "[msg][iso_time]"}
+        rename => {"log_level" => "[msg][log_level]"}
+        rename => {"module" => "[msg][module]"}
+        rename => {"text_message" => "[msg][message]"}
+        remove_field => ["message"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} \{/ {
+    grok {
+      match => {
+        "message" => "(?<timestamp>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (?<json_message>{.*})$"
+      }
+      add_tag => ["json_message_3"]
+      tag_on_failure => ["grok_failure_on_json_3"]
+    }
+    if "grok_failure_on_json_3" not in [tags] {
+      json {
+        source => "json_message"
+        target => "msg"
+        add_tag => ["json_3"]
+      }
+      mutate {
+        remove_field => ["message", "json_message"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} \w+/ {
+    grok {
+      match => {
+        "message" => "(?<timestamp>\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) (?<text_message>.+)$"
+      }
+      add_tag => ["text_message_2"]
+      tag_on_failure => ["grok_failure_on_text_2"]
+    }
+    if "grok_failure_on_text_2" not in [tags] {
+      mutate {
+        rename => {"text_message" => "[msg][message]"}
+        add_tag => ["text_2"]
+        remove_field => ["message"]
+      }
+    }
+  }
+
+  else if [message] =~ /^\{.*\}$/ {
+    json {
+      source => "message"
+      target => "msg"
+      add_tag => ["json_4"]
+    }
+    mutate {
+      remove_field => ["message"]
+    }
+  }
+
+  if [message] =~ "^Error:" {
+    # Error: storage.NewStorage(): failed to connect to any of the specified hosts
+    # No timestamp in message
+    dissect {
+      mapping => {
+        "message" => "%{err_level}: %{err_component}: %{err_condition}"
+      }
+      add_tag => [ "dissect1" ]
+    }
+    mutate {
+      add_tag => ["processed"]
+    }
+  }
+  else if [message] =~ "^\s*\x1b\[" {
+    # \x1B\[37m   \*\x1B\[0m Listening On: :443
+    # # Get rid of color codes
+    mutate {
+      gsub => ["message", "\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]", ""]
+    }
+    mutate {
+      gsub => ["message", "^\s*", ""]
+      add_tag => ["processed"]
+    }
+  }
+  else if [message] =~ "^User-Agent:" {
+    # User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Kitematic/0.17.1 Chrome/45.0.2454.85 Electron/0.35.4 Safari/537.36
+    grok {
+      match => {
+        "message" => "User-Agent: Mozilla/(?<ua_ver>[0-9.]+) \((?<ua_system-information>[\w0-9 ;]+)\) (?<ua_platform>[\w0-9\/\.]+) \((?<ua_platform-details>[\w0-9., ]+)\) (?<ua_extensions>[\w0-9./ ]+)"
+      }
+      add_tag => ["user_agent"]
+      tag_on_failure => ["grok_failure_on_user_agent"]
+    }
+    if "grok_failure_on_user_agent" not in [tags] {
+      mutate {
+        add_tag => ["processed"]
+      }
+    }
+  }
+
+  # This is very inclusive; special cases for text messages should come before this.
+  else if [message] =~ /^[\w\s]+/ {
+    mutate {
+      rename => {"message" => "[msg][message]"}
+      add_tag => ["text_3"]
+    }
+  }
+  }  # != concourse-log
+}
+}

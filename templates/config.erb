@@ -1,0 +1,34 @@
+input {
+    tcp {
+      port => <%= @logstash_port %>
+      mode => server
+      codec => line { 
+        charset => "UTF-8"
+      }
+    }
+    gelf {
+      port => 12201
+    }
+    beats {
+      port => 5044
+    }
+  }
+output {
+  if [type] == "clone" {
+    #
+    lumberjack {
+      hosts => ['<%= @dev_elastic_server %>']
+      port => 5043
+      codec => "json"
+      ssl_certificate => "/etc/logstash/certs/server.crt"
+      id => "lumberjack_01"
+    }
+  }
+  else {
+      elasticsearch {
+        hosts => '<%= @elastic_server %>:<%= @elastic_port %>'
+        user => <%= @user %>
+        password => <%= @password %>
+      }
+  }
+}
