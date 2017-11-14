@@ -4,7 +4,7 @@
 # It sets up consul.
 #
 
-class puppetmod-lantern_hashicorp::consultemplate (
+class lantern_hashicorp::consultemplate (
   String $consultemplate_executable,
   String $consultemplate_version,
   String $consultemplate_lchecksum,

@@ -3,7 +3,7 @@
 # Installs, configures, and manages Hashicorp tools for Lantern
 #
 
-class puppetmod-lantern_hashicorp (
+class lantern_hashicorp (
   String $consul_version = lookup ('consul_version'),
   Array $consul_servers = lookup ('consul_servers'),
   String $consul_acldatacenter = lookup ('consul_acldatacenter'),
@@ -30,7 +30,7 @@ class puppetmod-lantern_hashicorp (
 ) {
 
   #run through all base installations
-  class { '::puppetmod-lantern_hashicorp::consultemplate':
+  class { '::lantern_hashicorp::consultemplate':
     consultemplate_version    => $consultemplate_version,
     consultemplate_executable => $consultemplate_executable,
     consultemplate_lchecksum  => $consultemplate_lchecksum,
@@ -39,7 +39,7 @@ class puppetmod-lantern_hashicorp (
     consul_acldatacenter      => $consul_acldatacenter,
   }
 
-  class { '::puppetmod-lantern_hashicorp::consul':
+  class { '::lantern_hashicorp::consul':
     consul_version                 => $consul_version,
     consul_servers                 => $consul_servers,
     consul_acldatacenter           => $consul_acldatacenter,
