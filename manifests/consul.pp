@@ -4,7 +4,7 @@
 # It sets up consul.
 #
 
-class puppetmod-hashicorp::consul (
+class puppetmod-lantern_hashicorp::consul (
   Array $consul_servers,
   String $consul_docker_image,
   String $consul_version,

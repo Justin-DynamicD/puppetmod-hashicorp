@@ -4,21 +4,20 @@
 # It sets up consul.
 #
 
-class puppetmod-hashicorp::consultemplate (
+class puppetmod-lantern_hashicorp::consultemplate (
   String $consultemplate_executable,
   String $consultemplate_version,
-  String $consultemplate_baseurl,
   String $consultemplate_lchecksum,
   String $consultemplate_wchecksum,
   String $consultemplate_type,
-  String $consul_datacenter,
+  String $consul_acldatacenter,
   ) {
 
   #Install Consul-Template
   class { 'consul_template':
     service_enable   => true,
     vault_enabled    => true,
-    vault_address    => 'http://active.lv-vault.service.consul:8200',
+    vault_address    => "http://active.lv-vault.service.${consul_acldatacenter}.consul:8200",
     vault_token      => 'b83a3dfd-361d-d4e9-a9b5-bdbd532e35ae',
     vault_ssl        => false,
     vault_ssl_verify => false,

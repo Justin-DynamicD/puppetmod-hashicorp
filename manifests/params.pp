@@ -4,7 +4,7 @@
 # It sets default variables.
 #
 
-class puppetmod-hashicorp::params {
+class puppetmod-lantern_hashicorp::params {
   # Define all default parameters
   $consul_version            = '1.0.0'
   $consul_servers            =  ['10.10.30.10', '10.10.31.10', '10.10.32.10']
