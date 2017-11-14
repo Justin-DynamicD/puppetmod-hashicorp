@@ -13,6 +13,7 @@ class lantern_hashicorp (
   String $consul_agent_token = lookup ('consul_agent_token'),
   Array $consul_masterdatacenterservers = lookup ('consul_masterdatacenterservers'),
   String $consultemplate_version = lookup ('consultemplate_version'),
+  String $consultemplate_token = lookup ('consultemplate_token'),
   # Boolean $nomad_install,
   # String $nomad_version,
   # String $nomad_user,
@@ -26,8 +27,9 @@ class lantern_hashicorp (
 
   #run through all base installations
   class { '::lantern_hashicorp::consultemplate':
-    consultemplate_version    => $consultemplate_version,
-    consul_acldatacenter      => $consul_acldatacenter,
+    consultemplate_version => $consultemplate_version,
+    consultemplate_token   => $consultemplate_token,
+    consul_acldatacenter   => $consul_acldatacenter,
   }
 
   class { '::lantern_hashicorp::consul':
