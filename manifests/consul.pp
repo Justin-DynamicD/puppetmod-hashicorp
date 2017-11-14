@@ -12,7 +12,7 @@ class lantern_hashicorp::consul (
   String $consul_master_token,
   String $consul_agent_token,
   Array $consul_masterdatacenterservers,
-  String $consul_acldatacenter
+  String $consul_acldatacenter,
   String $consul_datacenter ) {
 
   #Validate server vs client
