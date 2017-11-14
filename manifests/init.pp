@@ -11,7 +11,6 @@ class lantern_hashicorp (
   String $consul_encrypt = lookup ('consul_encrypt'),
   String $consul_master_token = lookup ('consul_master_token'),
   String $consul_agent_token = lookup ('consul_agent_token'),
-  String $consul_masterdatacenter = lookup ('consul_masterdatacenter'),
   Array $consul_masterdatacenterservers = lookup ('consul_masterdatacenterservers'),
   String $consultemplate_version = lookup ('consultemplate_version'),
   Boolean $nomad_install,
@@ -39,7 +38,6 @@ class lantern_hashicorp (
     consul_encrypt                 => $consul_encrypt,
     consul_master_token            => $consul_master_token,
     consul_agent_token             => $consul_agent_token,
-    consul_masterdatacenter        => $consul_masterdatacenter,
     consul_masterdatacenterservers => $consul_masterdatacenterservers,
   }
 

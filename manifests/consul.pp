@@ -11,7 +11,6 @@ class lantern_hashicorp::consul (
   String $consul_encrypt,
   String $consul_master_token,
   String $consul_agent_token,
-  String $consul_masterdatacenter,
   Array $consul_masterdatacenterservers,
   String $consul_acldatacenter
   String $consul_datacenter ) {
@@ -28,7 +27,7 @@ class lantern_hashicorp::consul (
   }
 
   #Adjust server config by datacenter
-  if $consul_masterdatacenter == $consul_datacenter {
+  if $consul_acldatacenter == $consul_datacenter {
     $wan_join = []
   }
   else {
