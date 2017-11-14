@@ -17,7 +17,7 @@ class lantern_hashicorp::consul (
   #Validate server vs client
   if $::ipaddress in $consul_servers {
     $template = 'consulserver_template'
-    $retry_join = $consul_servers - "${::ipaddress}"
+    $retry_join = $consul_servers - $::ipaddress
     $bootstrap_count = count ($consul_servers)
   }
   else {
@@ -38,7 +38,7 @@ class lantern_hashicorp::consul (
 
     # Install components
     ensure_packages(['unzip', 'dnsmasq'], {'ensure' => 'present'})
-    class { '::consul' :
+    -> class { '::consul' :
       version        => $consul_version,
       install_method => 'url',
       manage_config  => false,
@@ -50,16 +50,22 @@ class lantern_hashicorp::consul (
       ensure => 'file',
       owner  => 'consul',
       group  => 'consul',
-    } ->
-    file { '/etc/consul-template/templates/consul.ctmpl' :
+    }
+    -> file { '/etc/consul-template/templates/consul.ctmpl' :
       ensure  =>  'file',
       content =>  template("lantern_hashicorp/${template}.erb"),
       notify  => Service['consul-template'],
-    } ->
-    file { '/etc/consul-template/config/consul.cfg' :
+    }
+    -> file { '/etc/consul-template/config/consul.cfg' :
       ensure  =>  'file',
       content =>  template('lantern_hashicorp/consul_config.erb'),
       notify  => Service['consul-template'],
+    }
+
+    # enable dnsmasq redirect
+    file { '/etc/dnsmasq.d/10-consul' :
+      ensure  =>  'file',
+      content =>  'server=/consul/127.0.0.1#8600',
     }
 
   } # temporary windows bypass
@@ -71,7 +77,7 @@ class lantern_hashicorp::consul (
 
     file { 'C:\programdata\consul\config\config.json' :
       ensure  => 'present',
-      content => "{\"acl_datacenter\":\"${consul_acldatacenter}\",\"acl_token\":\"${consul_agent_token}\",\"bind_addr\":\"${::ipaddress}\",\"datacenter\":\"${consul_datacenter}\",\"encrypt\":\"${consul_encrypt}\",\"encrypt_verify_incoming\":true,\"encrypt_verify_outgoing\":true,\"leave_on_terminate\":true,\"log_level\":\"INFO\",\"retry_join\":[\"10.10.30.10\",\"10.10.31.10\",\"10.10.32.10\"],\"server\":false}",
+      content => "{\"acl_datacenter\":\"${consul_acldatacenter}\",\"acl_token\":\"${consul_agent_token}\",\"bind_addr\":\"${::ipaddress}\",\"datacenter\":\"${consul_datacenter}\",\"encrypt\":\"${consul_encrypt}\",\"encrypt_verify_incoming\":true,\"encrypt_verify_outgoing\":true,\"leave_on_terminate\":true,\"log_level\":\"INFO\",\"retry_join\":${retry_join},\"server\":false}",
       require => Package['consul'],
       notify  => Exec['restart-consul'],
     }
@@ -79,7 +85,7 @@ class lantern_hashicorp::consul (
     exec { 'restart-consul' :
       refreshonly => true,
       provider    => powershell,
-      command     => "restart-service consul",
+      command     => 'restart-service consul',
     }
 
   }
