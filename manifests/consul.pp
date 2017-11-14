@@ -21,7 +21,7 @@ class lantern_hashicorp::consul (
     $bootstrap_count = count ($consul_servers)
   }
   else {
-    $server_mode = 'consulclient_template'
+    $template = 'consulclient_template'
     $retry_join = $consul_servers
   }
 
