@@ -6,7 +6,6 @@
 
 class lantern_hashicorp::consul (
   Array $consul_servers,
-  String $consul_docker_image,
   String $consul_version,
   String $consul_encrypt,
   String $consul_master_token,
