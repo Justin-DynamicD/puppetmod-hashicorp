@@ -4,16 +4,14 @@
 #
 
 class puppetmod-hashicorp (
-  Boolean $consul_install = $::puppetmod-hashicorp::params::consul_install,
   String $consul_version = $::puppetmod-hashicorp::params::consul_version,
-  String $consul_user = $::puppetmod-hashicorp::params::consul_user,
   Array $consul_servers = $::puppetmod-hashicorp::params::consul_servers,
+  String $consul_acldatacenter = $::puppetmod-hashicorp::params::consul_acldatacenter,
   String $consul_datacenter = $::puppetmod-hashicorp::params::consul_datacenter,
   String $consul_docker_image = $::puppetmod-hashicorp::params::consul_docker_image,
   String $consul_encrypt = $::puppetmod-hashicorp::params::consul_encrypt,
   String $consul_master_token = $::puppetmod-hashicorp::params::consul_master_token,
-  String $consul_agent_token = $::puppetmod-hashicorp::params::consul_agent_token,  
-  Boolean $consultemplate_install = $::puppetmod-hashicorp::params::consultemplate_install,
+  String $consul_agent_token = $::puppetmod-hashicorp::params::consul_agent_token,
   String $consultemplate_version = $::puppetmod-hashicorp::params::consultemplate_version,
   String $consultemplate_executable = $::puppetmod-hashicorp::params::consultemplate_executable,
   String $consultemplate_baseurl = $::puppetmod-hashicorp::params::consultemplate_baseurl,
@@ -32,29 +30,24 @@ class puppetmod-hashicorp (
 ) inherits puppetmod-hashicorp::params {
 
   #run through all base installations
-
-  if $consul_install {
-    class { '::puppetmod-hashicorp::consul':
-      consul_version      => $consul_version,
-      consul_user         => $consul_user,
-      consul_servers      => $consul_servers,
-      consul_datacenter   => $consul_datacenter,
-      consul_docker_image => $consul_docker_image,
-      consul_encrypt      => $consul_encrypt,
-      consul_master_token => $consul_master_token,
-      consul_agent_token  => $consul_agent_token,
-    }
+  class { '::puppetmod-hashicorp::consultemplate':
+    consultemplate_version    => $consultemplate_version,
+    consultemplate_executable => $consultemplate_executable,
+    consultemplate_baseurl    => $consultemplate_baseurl,
+    consultemplate_lchecksum  => $consultemplate_lchecksum,
+    consultemplate_wchecksum  => $consultemplate_wchecksum,
+    consultemplate_type       => $consultemplate_type,
   }
 
-  if $consultemplate_install {
-    class { '::puppetmod-hashicorp::consultemplate':
-      consultemplate_version    => $consultemplate_version,
-      consultemplate_executable => $consultemplate_executable,
-      consultemplate_baseurl    => $consultemplate_baseurl,
-      consultemplate_lchecksum  => $consultemplate_lchecksum,
-      consultemplate_wchecksum  => $consultemplate_wchecksum,
-      consultemplate_type       => $consultemplate_type,
-    }
+  class { '::puppetmod-hashicorp::consul':
+    consul_version      => $consul_version,
+    consul_user         => $consul_user,
+    consul_servers      => $consul_servers,
+    consul_datacenter   => $consul_datacenter,
+    consul_docker_image => $consul_docker_image,
+    consul_encrypt      => $consul_encrypt,
+    consul_master_token => $consul_master_token,
+    consul_agent_token  => $consul_agent_token,
   }
 
 }

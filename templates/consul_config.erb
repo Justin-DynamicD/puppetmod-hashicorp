@@ -1,0 +1,5 @@
+template {
+  source = "/etc/consul-template/templates/consul.ctmpl"
+  destination = "/etc/consul/config.json"
+  command = "service consul restart"
+}

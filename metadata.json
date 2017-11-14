@@ -9,6 +9,14 @@
     {
       "name": "puppetlabs-stdlib",
       "version_requirement": ">= 1.0.0"
+    },
+    {
+      "name": "KyleAnderson-consul",
+      "version_requirement": ">= 3.0.0"
+    },
+    {
+      "name": "gdhbashton-consul_template",
+      "version_requirement": ">= 1.0.0"
     }
   ]
 }

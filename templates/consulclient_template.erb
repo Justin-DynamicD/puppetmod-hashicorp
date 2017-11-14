@@ -1,0 +1,14 @@
+{
+  "leave_on_terminate":true,
+  "bind_addr":"<%= @ipaddress %>",
+  "data_dir":"/opt/consul",
+  "datacenter":"<%= @consul_datacenter %>",
+  "log_level":"INFO",
+  "server":false,
+  "retry_join":<%= @retry_join %>,
+  "encrypt":"{{ with secret "secret/consul/encrypt_key" }}{{ .Data.value }}{{ end }}",
+  "encrypt_verify_incoming":true,
+  "encrypt_verify_outgoing":true,
+  "acl_datacenter":"<%= @consul_acldatacenter %>",
+  "acl_token":"{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}"
+}

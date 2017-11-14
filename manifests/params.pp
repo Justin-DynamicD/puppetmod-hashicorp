@@ -6,18 +6,15 @@
 
 class puppetmod-hashicorp::params {
   # Define all default parameters
-  $consul_install            = true
   $consul_version            = '1.0.0'
-  $consul_user               = 'consul'
-  $consul_mode               = 'url'
   $consul_servers            =  ['10.10.30.10', '10.10.31.10', '10.10.32.10']
+  $consul_acldatacenter      = 'lv-ops'
   $consul_datacenter         = 'lv-ops'
   $consul_docker_image       = 'consul'
   $consul_encrypt            = 'Ok02uszmHd6ijEkRzm4MEg=='
   $consul_master_token       = '9c97a554-1b73-4cd7-9547-3c2c26b3a45d'
   $consul_agent_token        = 'bc32b60c-8374-5e57-70cc-e44311bb9131'
 
-  $consultemplate_install    = true
   $consultemplate_version    = '0.19.3'
   $consultemplate_user       = 'root'
   $consultemplate_executable = 'consul-template'

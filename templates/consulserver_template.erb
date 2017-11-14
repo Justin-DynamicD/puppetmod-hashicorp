@@ -1,0 +1,21 @@
+{
+  "acl_agent_token":"{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}",
+  "acl_datacenter":"<%= @consul_acldatacenter %>",
+  "acl_default_policy":"deny",
+  "acl_down_policy":"deny",
+  "acl_master_token":"<%= @consul_master_token %>%",
+  "bind_addr":"<%= @ipaddress %>",
+  "bootstrap_expect":<%= @bootstrap_count %>,
+  "client_addr":"0.0.0.0",
+  "data_dir":"/opt/consul",
+  "datacenter":"<%= @consul_datacenter %>",
+  "encrypt":"{{ with secret "secret/consul/encrypt_key" }}{{ .Data.value }}{{ end }}",
+  "encrypt_verify_incoming":true,
+  "encrypt_verify_outgoing":true,
+  "log_level":"INFO",
+  "retry_join":<%= @retry_join %>,
+  "retry_join_wan":<%= @wan_join %>,
+  "server":true,
+  "skip_leave_on_interrupt":true,
+  "ui":true
+}
