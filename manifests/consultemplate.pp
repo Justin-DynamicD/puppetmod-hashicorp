@@ -5,11 +5,7 @@
 #
 
 class lantern_hashicorp::consultemplate (
-  String $consultemplate_executable,
   String $consultemplate_version,
-  String $consultemplate_lchecksum,
-  String $consultemplate_wchecksum,
-  String $consultemplate_type,
   String $consul_acldatacenter,
   ) {
 

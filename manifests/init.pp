@@ -14,10 +14,6 @@ class lantern_hashicorp (
   String $consul_masterdatacenter = lookup ('consul_masterdatacenter'),
   Array $consul_masterdatacenterservers = lookup ('consul_masterdatacenterservers'),
   String $consultemplate_version = lookup ('consultemplate_version'),
-  String $consultemplate_executable = lookup ('consultemplate_executable'),
-  String $consultemplate_lchecksum = lookup ('consultemplate_lchecksum'),
-  String $consultemplate_wchecksum = lookup ('consultemplate_wchecksum'),
-  String $consultemplate_type = lookup ('$consultemplate_type'),
   Boolean $nomad_install,
   String $nomad_version,
   String $nomad_user,
@@ -32,10 +28,6 @@ class lantern_hashicorp (
   #run through all base installations
   class { '::lantern_hashicorp::consultemplate':
     consultemplate_version    => $consultemplate_version,
-    consultemplate_executable => $consultemplate_executable,
-    consultemplate_lchecksum  => $consultemplate_lchecksum,
-    consultemplate_wchecksum  => $consultemplate_wchecksum,
-    consultemplate_type       => $consultemplate_type,
     consul_acldatacenter      => $consul_acldatacenter,
   }
 
