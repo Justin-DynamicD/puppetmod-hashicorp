@@ -53,12 +53,12 @@ class lantern_hashicorp::consul (
     } ->
     file { '/etc/consul-template/templates/consul.ctmpl' :
       ensure  =>  'file',
-      content =>  template("puppetmod-hashicorp/${template}.erb"),
+      content =>  template("lantern_hashicorp/${template}.erb"),
       notify  => Service['consul-template'],
     } ->
-    file { '/etc/consul/config.json' :
+    file { '/etc/consul-template/config/consul.cfg' :
       ensure  =>  'file',
-      content =>  template("puppetmod-hashicorp/${template}.erb"),
+      content =>  template('lantern_hashicorp/consul_config.erb'),
       notify  => Service['consul-template'],
     }
 
