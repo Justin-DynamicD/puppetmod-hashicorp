@@ -16,10 +16,10 @@ class lantern_hashicorp::nomad (
 
   # grab installer from registry.terraform and install
   file { '/apps' :
-    ensure  =>  'folder',
+    ensure  =>  'directory',
   }
   file { '/apps/nomad_install' :
-    ensure  =>  'folder',
+    ensure  =>  'directory',
     require => File['/apps'],
   }
   exec { 'pull_repo' :
