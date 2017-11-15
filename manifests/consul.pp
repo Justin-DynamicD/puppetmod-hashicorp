@@ -38,7 +38,7 @@ class lantern_hashicorp::consul (
 
     # Install components
     ensure_packages(['unzip', 'dnsmasq'], {'ensure' => 'present'})
-    -> class { '::consul' :
+    class { '::consul' :
       version        => $consul_version,
       install_method => 'url',
       manage_config  => false,
