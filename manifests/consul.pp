@@ -65,7 +65,7 @@ class lantern_hashicorp::consul (
     # enable dnsmasq redirect
     file { '/etc/dnsmasq.d/10-consul' :
       ensure  =>  'file',
-      content =>  'server=/consul/127.0.0.1#8600\n',
+      content =>  "server=/consul/127.0.0.1#8600\n",
     }
 
   } # temporary windows bypass
