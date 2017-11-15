@@ -1,4 +1,4 @@
-# == Class: puppetmod-hashicorp
+# == Class: lantern_hashicorp
 #
 # Installs, configures, and manages Hashicorp tools for Lantern
 #
@@ -14,11 +14,10 @@ class lantern_hashicorp (
   Array $consul_masterdatacenterservers = lookup ('consul_masterdatacenterservers'),
   String $consultemplate_version = lookup ('consultemplate_version'),
   String $consultemplate_token = lookup ('consultemplate_token'),
-  # Boolean $nomad_install,
-  # String $nomad_version,
-  # String $nomad_user,
-  # Array $nomad_servers,
-  # String $nomad_datacenter,
+  String $nomad_version = lookup('nomad_version'),
+  String $nomad_datacenter = lookup('nomad_datacenter'),
+  Array $nomad_servers = lookup('nomad_servers'),
+  String $nomad_metatags = lookup('nomad_metatags'),
   # Boolean $vault_install,
   # String $vault_version,
   # String $vault_user,
@@ -41,6 +40,14 @@ class lantern_hashicorp (
     consul_master_token            => $consul_master_token,
     consul_agent_token             => $consul_agent_token,
     consul_masterdatacenterservers => $consul_masterdatacenterservers,
+  }
+
+  class { '::lantern_hashicorp::nomad':
+    nomad_version     => $nomad_version,
+    nomad_datacenter  => $nomad_datacenter,
+    nomad_servers     => $nomad_servers,
+    nomad_metatags    => $nomad_metatags,
+    consul_datacenter => $consul_datacenter,
   }
 
 }

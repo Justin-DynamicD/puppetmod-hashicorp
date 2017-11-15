@@ -1,6 +1,6 @@
-# == Class puppetmod-hashicorp::consultemplate
+# == Class lantern_hashicorp::consultemplate
 #
-# This class is meant to be called from puppetmod-hashicorp.
+# This class is meant to be called from lantern_hashicorp.
 # It sets up consul.
 #
 
