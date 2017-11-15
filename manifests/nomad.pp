@@ -31,7 +31,7 @@ class lantern_hashicorp::nomad (
   exec { 'install_nomad' :
     command => "/apps/nomad_install/modules/install-nomad/install-nomad --version ${nomad_version}",
     path    => '/usr/bin:/usr/sbin:/bin',
-    unless  => "nomad version | grep ${nomad_version}",
+    unless  => "/usr/local/bin/nomad/nomad version | grep ${nomad_version}",
     require => Exec['pull_repo'],
   }
 
