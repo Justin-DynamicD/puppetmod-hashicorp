@@ -7,7 +7,7 @@
 class lantern_hashicorp::nomad (
   String $nomad_version,
   String $nomad_datacenter,
-  String $nomad_servers,
+  Array $nomad_servers,
   String $nomad_metatags,
   String $consul_datacenter,
   String $nomad_gitver = 'v0.0.2',
