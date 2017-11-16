@@ -45,14 +45,18 @@ class lantern_hashicorp::nomad (
   }
   user { 'nomad' :
     ensure => present,
-    groups => ["admin","docker","sudo"],
+    groups => ["docker","sudo"],
   }
-  
+  sudo::conf { 'nomad':
+    priority => 10,
+    content  => "nomad   ALL=(ALL:ALL) ALL",
+  }
+
   # Set service
   file { '/etc/systemd/system/nomad.service' :
-    ensure => 'file',
-    source => "puppet:///modules/lantern_hashicorp/files/nomad.service",
-    notify => Exec['reload systemd']
+    ensure  => 'file',
+    content => file('lantern_hashicorp/nomad.service'),
+    notify  => Exec['reload systemd']
   }
   exec { 'reload systemd' :
     command     => 'systemctl daemon-reload',
@@ -67,8 +71,8 @@ class lantern_hashicorp::nomad (
       group  => 'nomad',
     }
     -> file { '/etc/consul-template/templates/nomad.ctmpl' :
-      ensure  =>  'file',
-      content =>  template("lantern_hashicorp/${template}.erb"),
+      ensure  => 'file',
+      content => template("lantern_hashicorp/${template}.erb"),
       notify  => Service['consul-template'],
     }
     -> file { '/etc/consul-template/config/nomad.cfg' :
