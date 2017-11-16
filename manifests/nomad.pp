@@ -14,6 +14,15 @@ class lantern_hashicorp::nomad (
   String $nomad_gitsource = 'https://github.com/hashicorp/terraform-aws-nomad.git',
 ) {
 
+  #Validate server vs client
+  if $::ipaddress in $nomad_servers {
+    $template = 'nomadserver_template'
+    $bootstrap_count = count ($nomad_servers)
+  }
+  else {
+    $template = 'nomadclient_template'
+  }
+
   # grab installer from registry.terraform and install
   file { '/apps' :
     ensure  =>  'directory',
@@ -34,5 +43,38 @@ class lantern_hashicorp::nomad (
     unless  => "/usr/local/bin/nomad version | grep ${nomad_version}",
     require => Exec['pull_repo'],
   }
+  user { 'nomad' :
+    ensure => present,
+    groups => ["admin","docker","sudo"],
+  }
+  
+  # Set service
+  file { '/etc/systemd/system/nomad.service' :
+    ensure => 'file',
+    source => "puppet:///modules/lantern_hashicorp/files/nomad.service",
+    notify => Exec['reload systemd']
+  }
+  exec { 'reload systemd' :
+    command     => 'systemctl daemon-reload',
+    path        => '/usr/bin:/usr/sbin:/bin',
+    refreshonly => true,
+  }
+
+  # Set templates
+  file { '/opt/nomad/config/config.hcl' :
+      ensure => 'file',
+      owner  => 'nomad',
+      group  => 'nomad',
+    }
+    -> file { '/etc/consul-template/templates/nomad.ctmpl' :
+      ensure  =>  'file',
+      content =>  template("lantern_hashicorp/${template}.erb"),
+      notify  => Service['consul-template'],
+    }
+    -> file { '/etc/consul-template/config/nomad.cfg' :
+      ensure  =>  'file',
+      content =>  template('lantern_hashicorp/nomad_config.erb'),
+      notify  => Service['consul-template'],
+    }
 
 }

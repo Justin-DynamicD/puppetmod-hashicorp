@@ -1,0 +1,15 @@
+# Setup data dir
+data_dir = "/opt/nomad/data"
+datacenter = "<%= @nomad_datacenter %>"
+
+# Enable the server
+server {
+  enabled = true
+  bootstrap_expect = <%= @bootstrap_count %>
+}
+
+# define Consul connection
+consul {
+  address = "127.0.0.1:8500"
+  token   = "{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}"
+}

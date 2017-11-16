@@ -1,0 +1,21 @@
+[Unit]
+Description=Daemon for nomad
+Wants=basic.target
+After=basic.target network.target
+
+[Service]
+User=nomad
+Group=nomad
+ExecStart=/opt/nomad/bin/nomad agent --config /opt/nomad/config/config.hcl
+SuccessExitStatus=12
+ExecReload=/bin/kill -SIGHUP $MAINPID
+ExecStop=/bin/kill -SIGINT $MAINPID
+KillMode=process
+Restart=on-failure
+StartLimitInterval=20
+StartLimitBurst=5
+TimeoutStartSec=0
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

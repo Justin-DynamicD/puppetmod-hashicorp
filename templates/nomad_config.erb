@@ -1,0 +1,5 @@
+template {
+  source = "/etc/consul-template/templates/nomad.ctmpl"
+  destination = "/opt/nomad/config/config.hcl"
+  command = "service nomad restart"
+}
