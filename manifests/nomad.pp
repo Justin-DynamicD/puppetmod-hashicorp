@@ -45,11 +45,11 @@ class lantern_hashicorp::nomad (
   }
   user { 'nomad' :
     ensure => present,
-    groups => ["docker","sudo"],
+    groups => ['docker','sudo'],
   }
   sudo::conf { 'nomad':
     priority => 10,
-    content  => "nomad   ALL=(ALL:ALL) ALL",
+    content  => 'nomad   ALL=(ALL:ALL) ALL',
   }
 
   # Set service
