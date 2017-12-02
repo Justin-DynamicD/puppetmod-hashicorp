@@ -18,7 +18,8 @@ class lantern_hashicorp (
   String $nomad_datacenter = lookup('nomad_datacenter'),
   Array $nomad_servers = lookup('nomad_servers'),
   String $nomad_metatags = lookup('nomad_metatags'),
-  # Boolean $vault_install,
+  String $vault_servicename = lookup('vault_servicename'),
+  Integer $vault_port = lookup('vault_port'),
   # String $vault_version,
   # String $vault_user,
   # String $vault_mode,
@@ -48,6 +49,8 @@ class lantern_hashicorp (
     nomad_servers     => $nomad_servers,
     nomad_metatags    => $nomad_metatags,
     consul_datacenter => $consul_datacenter,
+    vault_servicename => $vault_servicename,
+    vault_port        => $vault_port,
   }
 
 }

@@ -18,3 +18,9 @@ consul {
   address = "127.0.0.1:8500"
   token   = "{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}"
 }
+
+# vault integration
+vault {
+  enabled = true
+  address = "http://<%= @vault_servicename %>.service.consul:<%= @vault_port %>"
+}

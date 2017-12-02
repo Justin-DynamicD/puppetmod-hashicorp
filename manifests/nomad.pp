@@ -10,6 +10,8 @@ class lantern_hashicorp::nomad (
   Array $nomad_servers,
   String $nomad_metatags,
   String $consul_datacenter,
+  String $vault_servicename,
+  Integer $vault_port,
   String $nomad_gitver = 'v0.0.2',
   String $nomad_gitsource = 'https://github.com/hashicorp/terraform-aws-nomad.git',
 ) {
