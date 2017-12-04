@@ -8,16 +8,18 @@ class lantern_hashicorp::consultemplate (
   String $consultemplate_version,
   String $consultemplate_token,
   String $consul_acldatacenter,
+  String $vault_servicename,
+  Integer $vault_port,
   ) {
 
   #Install Consul-Template
   class { 'consul_template':
     service_enable   => true,
     vault_enabled    => true,
-    vault_address    => "http://active.lv-vault.service.${consul_acldatacenter}.consul:8200",
+    vault_address    => "https://${vault_servicename}.ad.lanterncredit.com:${vault_port}",
     vault_token      => $consultemplate_token,
-    vault_ssl        => false,
-    vault_ssl_verify => false,
+    vault_ssl        => true,
+    vault_ssl_verify => true,
     consul_wait      => '5s:30s',
   }
 }

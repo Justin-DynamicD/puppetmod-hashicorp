@@ -17,7 +17,7 @@ consul {
 # vault integration
 vault {
   enabled = true
-  address = "http://<%= @vault_servicename %>.service.consul:<%= @vault_port %>"
+  address = "https://<%= @vault_servicename %>.ad.lanterncredit.com:<%= @vault_port %>"
   token   = "{{ with secret "secret/nomad/server_token" }}{{ .Data.value }}{{ end }}"
   create_from_role = "nomad-cluster"
 }

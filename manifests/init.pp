@@ -30,6 +30,8 @@ class lantern_hashicorp (
     consultemplate_version => $consultemplate_version,
     consultemplate_token   => $consultemplate_token,
     consul_acldatacenter   => $consul_acldatacenter,
+    vault_servicename      => $vault_servicename,
+    vault_port             => $vault_port,
   }
 
   class { '::lantern_hashicorp::consul':
