@@ -41,7 +41,7 @@ class lantern_hashicorp::nomad (
     require => File['/apps/nomad_install'],
   }
   exec { 'repo_version' :
-    command     => "git checkout tags/${nomad_gitver} /apps/nomad_install",
+    command     => "(cd /apps/nomad_install && git checkout tags/${nomad_gitver})",
     path        => '/usr/bin:/usr/sbin:/bin',
     refreshonly => true,
   }
