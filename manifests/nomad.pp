@@ -34,10 +34,17 @@ class lantern_hashicorp::nomad (
     require => File['/apps'],
   }
   exec { 'pull_repo' :
-    command => "git clone --branch ${nomad_gitver} ${nomad_gitsource} /apps/nomad_install",
+    command => "git clone ${nomad_gitsource} /apps/nomad_install",
     path    => '/usr/bin:/usr/sbin:/bin',
     creates => '/apps/nomad_install/README.md',
+    notify  => Exec['repo_version'],
     require => File['/apps/nomad_install'],
+  }
+  exec { 'repo_version' :
+    command     => "git checkout tags/${nomad_gitver} /apps/nomad_install",
+    path        => '/usr/bin:/usr/sbin:/bin',
+    refreshonly => true,
+  }
   }
   exec { 'install_nomad' :
     command => "/apps/nomad_install/modules/install-nomad/install-nomad --version ${nomad_version}",
