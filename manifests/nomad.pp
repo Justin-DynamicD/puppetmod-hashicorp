@@ -45,7 +45,6 @@ class lantern_hashicorp::nomad (
     path        => '/usr/bin:/usr/sbin:/bin',
     refreshonly => true,
   }
-  }
   exec { 'install_nomad' :
     command => "/apps/nomad_install/modules/install-nomad/install-nomad --version ${nomad_version}",
     path    => '/usr/bin:/usr/sbin:/bin',
