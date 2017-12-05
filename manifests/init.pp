@@ -25,6 +25,13 @@ class lantern_hashicorp (
   # String $vault_mode,
 ) {
 
+  #add resize script to root home
+  file { '/root/resize.sh' :
+    ensure  => 'file',
+    content => file('lantern_hashicorp/resize.sh'),
+    mode    => '0755',
+  }
+
   #run through all base installations
   class { '::lantern_hashicorp::consultemplate':
     consultemplate_version => $consultemplate_version,
