@@ -5,6 +5,7 @@ datacenter = "<%= @nomad_datacenter %>"
 # Enable the server
 server {
   enabled = true
+  authoritative_region = "global"
   bootstrap_expect = <%= @bootstrap_count %>
 }
 
@@ -20,4 +21,9 @@ vault {
   address = "https://<%= @vault_servicename %>.ad.lanterncredit.com:<%= @vault_port %>"
   token   = "{{ with secret "secret/nomad/server_token" }}{{ .Data.value }}{{ end }}"
   create_from_role = "nomad-cluster"
+}
+
+# acl enabled
+acl {
+  enabled = true
 }
