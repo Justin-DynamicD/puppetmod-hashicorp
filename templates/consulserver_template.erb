@@ -1,5 +1,5 @@
 {
-  "acl_agent_token":"{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}",
+  "acl_token":"{{ with secret "secret/consul/agent_token" }}{{ .Data.value }}{{ end }}",
   "acl_datacenter":"<%= @consul_acldatacenter %>",
   "acl_default_policy":"deny",
   "acl_down_policy":"deny",
