@@ -33,24 +33,35 @@ class lantern_hashicorp::nomad (
     ensure  =>  'directory',
     require => File['/apps'],
   }
-  exec { 'pull_repo' :
-    command => "git clone ${nomad_gitsource} /apps/nomad_install",
-    path    => '/usr/bin:/usr/sbin:/bin',
-    creates => '/apps/nomad_install/README.md',
-    notify  => Exec['repo_version'],
-    require => File['/apps/nomad_install'],
+  vcsrepo { '/apps/nomad_install':
+    ensure   => present,
+    provider => git,
+    source   => $nomad_gitsource,
+    revision => $nomad_gitver,
+    require  => File['/apps/nomad_install']
   }
-  exec { 'repo_version' :
-    command     => "(cd /apps/nomad_install && git checkout tags/${nomad_gitver})",
-    path        => '/usr/bin:/usr/sbin:/bin',
-    refreshonly => true,
+
+  # look for nomad. Change exec rules based on result
+  exec {'check_presence_true':
+    command => '/bin/true',
+    onlyif  => '/usr/bin/test -e /usr/local/bin/nomad',
+  }
+  exec {'check_presence_false':
+    command => '/bin/true',
+    unless  => '/usr/bin/test -e /usr/local/bin/nomad',
   }
   exec { 'install_nomad' :
     command => "/apps/nomad_install/modules/install-nomad/install-nomad --version ${nomad_version}",
     path    => '/usr/bin:/usr/sbin:/bin',
-    unless  => "/usr/local/bin/nomad version 2> /dev/null | grep ${nomad_version}",
-    require => Exec['pull_repo'],
+    require => Exec['check_presence_false'],
   }
+  exec { 'update_nomad' :
+    command => "/apps/nomad_install/modules/install-nomad/install-nomad --version ${nomad_version}",
+    path    => '/usr/bin:/usr/sbin:/bin',
+    unless  => "/usr/local/bin/nomad version 2> /dev/null | grep ${nomad_version}",
+    require => Exec['check_presence_true'],
+  }
+
   user { 'nomad' :
     ensure => present,
     groups => ['docker','sudo'],

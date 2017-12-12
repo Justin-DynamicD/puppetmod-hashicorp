@@ -37,7 +37,7 @@ class lantern_hashicorp::consul (
   if $facts['os']['family'] != 'windows' {
 
     # Install components
-    ensure_packages(['unzip', 'dnsmasq'], {'ensure' => 'present'})
+    ensure_packages(['unzip', 'dnsmasq-base', 'dnsmasq'], {'ensure' => 'present'})
     class { '::consul' :
       version        => $consul_version,
       install_method => 'url',
