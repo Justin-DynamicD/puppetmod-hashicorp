@@ -1,10 +1,10 @@
-# == Class lantern_hashicorp::consul
+# == Class contoso_hashicorp::consul
 #
-# This class is meant to be called from lantern_hashicorp.
+# This class is meant to be called from contoso_hashicorp.
 # It sets up consul.
 #
 
-class lantern_hashicorp::consul (
+class contoso_hashicorp::consul (
   Array $consul_servers,
   String $consul_version,
   String $consul_encrypt,
@@ -53,12 +53,12 @@ class lantern_hashicorp::consul (
     }
     -> file { '/etc/consul-template/templates/consul.ctmpl' :
       ensure  =>  'file',
-      content =>  template("lantern_hashicorp/${template}.erb"),
+      content =>  template("contoso_hashicorp/${template}.erb"),
       notify  => Service['consul-template'],
     }
     -> file { '/etc/consul-template/config/consul.cfg' :
       ensure  =>  'file',
-      content =>  template('lantern_hashicorp/consul_config.erb'),
+      content =>  template('contoso_hashicorp/consul_config.erb'),
       notify  => Service['consul-template'],
     }
 

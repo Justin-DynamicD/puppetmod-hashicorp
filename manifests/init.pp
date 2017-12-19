@@ -1,9 +1,9 @@
-# == Class: lantern_hashicorp
+# == Class: contoso_hashicorp
 #
 # Installs, configures, and manages Hashicorp tools for Lantern
 #
 
-class lantern_hashicorp (
+class contoso_hashicorp (
   String $consul_version = lookup ('consul_version'),
   Array $consul_servers = lookup ('consul_servers'),
   String $consul_acldatacenter = lookup ('consul_acldatacenter'),
@@ -28,12 +28,12 @@ class lantern_hashicorp (
   #add resize script to root home
   file { '/root/resize.sh' :
     ensure  => 'file',
-    content => file('lantern_hashicorp/resize.sh'),
+    content => file('contoso_hashicorp/resize.sh'),
     mode    => '0755',
   }
 
   #run through all base installations
-  class { '::lantern_hashicorp::consultemplate':
+  class { '::contoso_hashicorp::consultemplate':
     consultemplate_version => $consultemplate_version,
     consultemplate_token   => $consultemplate_token,
     consul_acldatacenter   => $consul_acldatacenter,
@@ -41,7 +41,7 @@ class lantern_hashicorp (
     vault_port             => $vault_port,
   }
 
-  class { '::lantern_hashicorp::consul':
+  class { '::contoso_hashicorp::consul':
     consul_version                 => $consul_version,
     consul_servers                 => $consul_servers,
     consul_acldatacenter           => $consul_acldatacenter,
@@ -52,7 +52,7 @@ class lantern_hashicorp (
     consul_masterdatacenterservers => $consul_masterdatacenterservers,
   }
 
-  class { '::lantern_hashicorp::nomad':
+  class { '::contoso_hashicorp::nomad':
     nomad_version     => $nomad_version,
     nomad_datacenter  => $nomad_datacenter,
     nomad_servers     => $nomad_servers,

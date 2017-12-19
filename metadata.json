@@ -1,10 +1,10 @@
 {
-  "name": "puppetmod-lantern_hashicorp",
+  "name": "puppetmod-contoso_hashicorp",
   "version": "0.3.1",
   "author": "Lantern Credit",
   "license": "Apache-2.0",
   "summary": "Install and manage hashicorp central tools",
-  "source": "https://lcode.io/DevOps/puppetmod-lantern_hashicorp",
+  "source": "https://github.com/Justin-DynamicD/puppetmod-hashicorp",
   "dependencies": [
     {
       "name": "puppetlabs-stdlib",

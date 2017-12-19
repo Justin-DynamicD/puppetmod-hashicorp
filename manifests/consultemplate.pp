@@ -1,10 +1,10 @@
-# == Class lantern_hashicorp::consultemplate
+# == Class contoso_hashicorp::consultemplate
 #
-# This class is meant to be called from lantern_hashicorp.
+# This class is meant to be called from contoso_hashicorp.
 # It sets up consul.
 #
 
-class lantern_hashicorp::consultemplate (
+class contoso_hashicorp::consultemplate (
   String $consultemplate_version,
   String $consultemplate_token,
   String $consul_acldatacenter,

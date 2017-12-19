@@ -1,10 +1,10 @@
-# == Class lantern_hashicorp::nomad
+# == Class contoso_hashicorp::nomad
 #
-# This class is meant to be called from lantern_hashicorp.
+# This class is meant to be called from contoso_hashicorp.
 # It sets up consul.
 #
 
-class lantern_hashicorp::nomad (
+class contoso_hashicorp::nomad (
   String $nomad_version,
   String $nomad_datacenter,
   Array $nomad_servers,
@@ -74,7 +74,7 @@ class lantern_hashicorp::nomad (
   # Set service
   file { '/etc/systemd/system/nomad.service' :
     ensure  => 'file',
-    content => file('lantern_hashicorp/nomad.service'),
+    content => file('contoso_hashicorp/nomad.service'),
     notify  => Exec['reload systemd']
   }
   exec { 'reload systemd' :
@@ -91,12 +91,12 @@ class lantern_hashicorp::nomad (
     }
     -> file { '/etc/consul-template/templates/nomad.ctmpl' :
       ensure  => 'file',
-      content => template("lantern_hashicorp/${template}.erb"),
+      content => template("contoso_hashicorp/${template}.erb"),
       notify  => Service['consul-template'],
     }
     -> file { '/etc/consul-template/config/nomad.cfg' :
       ensure  =>  'file',
-      content =>  template('lantern_hashicorp/nomad_config.erb'),
+      content =>  template('contoso_hashicorp/nomad_config.erb'),
       notify  => Service['consul-template'],
     }
 
